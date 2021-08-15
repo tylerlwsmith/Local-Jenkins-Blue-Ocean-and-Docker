@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_TLS_VERIFY=1
+    ports:
+      - ${JENKINS_PORT:-8080}:8080
+      - ${JENKINS_AGENT_PORT:-50000}:50000
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client:ro
+    networks:
+      - jenkins
+    depends_on:
+      - docker
+    secrets:
+      - source: public_key
+        target: /var/jenkins_home/.ssh/id_rsa.pub
+        uid: "${JENKINS_UID:-1000}"
+        gid: "${JENKINS_GID:-1000}"
+      - source: private_key
+        target: /var/jenkins_home/.ssh/id_rsa
+        uid: "${JENKINS_UID:-1000}"
+        gid: "${JENKINS_GID:-1000}"
+
+  docker:
+    image: docker:20.10.7-dind
+    privileged: true
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client
+    networks:
+      - jenkins
+    expose:
+      - 2376
+
+networks:
+  jenkins:
+
+volumes:
+  jenkins-data:
+  jenkins-docker-certs:
+
+secrets:
+  public_key:
+    file: ${HOST_PUBLIC_KEY:-~/.ssh/jenkins.pub}
+  private_key:
+    file: ${HOST_PRIVATE_KEY:-~/.ssh/jenkins}
