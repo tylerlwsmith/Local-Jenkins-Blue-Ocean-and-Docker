@@ -27,4 +27,7 @@ RUN chmod +x /usr/local/bin/docker-compose
 USER jenkins
 RUN jenkins-plugin-cli --plugins "blueocean:1.24.7 docker-workflow:1.26"
 
+# Add SSH key folder as Jenkins user to ensure correct permissions.
+RUN mkdir /var/jenkins_home/.ssh
+
 EXPOSE 8080 50000

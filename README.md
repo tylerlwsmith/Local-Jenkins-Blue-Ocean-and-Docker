@@ -1,4 +1,4 @@
-# Docker/Jenkins/Blue Ocean Docker Compose
+# Local Jenkins, Blue Ocean, and Docker
 
 This repository contains a Docker Compose version of the Jenkins & Docker setup from the Linux/MacOS section of the Jenkins User Handbook's [installing Jenkins with Docker](https://www.jenkins.io/doc/book/installing/docker/#on-macos-and-linux) guide. The repo contains the following:
 
@@ -8,7 +8,7 @@ This repository contains a Docker Compose version of the Jenkins & Docker setup 
 ## Setup
 
 1. Copy the `.env.example` file into a `.env` file using the following command: `cp .env.example .env`.
-2. Generate an SSH key for Jenkins on the host machine using the following command: `ssh-keygen -t rsa -b 4096 -f ~/.ssh/jenkins`. This key will be used inside of the Jenkins container for authenticating via SSH for deployment. If you'd like to use your current `id_rsa` and `id_rsa.pub` keys, update the `HOST_PRIVATE_KEY` and `HOST_PUBLIC_KEY` variables in the `.env` file that you just created.
+2. Generate an SSH key for Jenkins on the host machine using the following command: `ssh-keygen -t rsa -b 4096 -N "" -f ~/.ssh/jenkins`. This key will be used inside of the Jenkins container for authenticating via SSH for deployment. If you'd like to use your current `id_rsa` and `id_rsa.pub` keys, update the `HOST_PRIVATE_KEY` and `HOST_PUBLIC_KEY` variables in the `.env` file that you just created.
 3. On your host machine, run `docker-compose up`. Watch the logs in your terminal: when Jenkins installs, it will display an initial password for logging in. If you don't see the the initial password in your terminal, you can run `docker-compose exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword` in a separate terminal and retrieve it there.
 4. Navigate to `http://localhost:8080` in your browser. Enter the default password, click on "Install suggested plugins," create the admin user account, then set the Jenkins URL to the default value. Click "Start using Jenkins."
 
@@ -53,3 +53,5 @@ You might want to run Jenkins and Docker locally if wanted to test them without 
 If you've read [Jérôme Petazzoni's post about using Docker-in-Docker in your CI environment](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/), you know there are drawbacks to using Docker-in-Docker instead of mounting the host Docker socket into your container. However, on MacOS there's an impedance mismatch between the host operating system and Docker's Linux VM when it comes to file and group permissions ([here's a relevant GitHub issue](https://github.com/docker/for-mac/issues/4755)). Many of the past solutions for using the host Docker in CI have stopped working following Docker updates.
 
 Using Docker-in-Docker with Jenkins smooths over the MacOS/Docker impedance mismatch in a dependable way that is unlikely to break with future Docker releases. While you lose out on Docker's build cache when you restart the Docker-in-Docker container, this repository is intended to be used for local testing instead of production applications.
+
+Further, `dind` variants of the Docker-and-Docker image automatically have generated TLS certificates since version 18.09, saving you the effort of having to configure that manually if you wish to connect to remote hosts.
